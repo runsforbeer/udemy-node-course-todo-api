@@ -1,41 +1,30 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-// tell Mongoose to use native JS promise library
-mongoose.Promise = global.Promise;
+var {mongoose} = require('./db/mongoose');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
-// todoapp collection will be created if it doesn't exist... even with mLab
-mongoose.connect('mongodb://don:don@ds255767.mlab.com:55767/todoapp');
+var app = express();
+app.use(bodyParser.json());
 
-var Todo = mongoose.model('Todo', {
-    text: {
-        type: String
-    },
-    completed: {
-        type: Boolean
-    },
-    completedAt: {
-        type: Number
-    }
+app.post('/todos', (req,res) => {
+    var todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        console.log('Created note.', doc);
+        res.status(200).send(doc);
+    }, (e) => {
+        res.status(400).send(e);
+    })
 });
 
-var newTodo = new Todo({  // must run as constructor function
-    text: 'Cook dinner'
+app.get('/todos', (req,res) => {
+    res.send('Not implemented');
 });
 
-var anotherTodo = new Todo({
-    text: 'Create a new todo',
-    completed: true,
-    completedAt: 13245
-});
-
-newTodo.save().then((doc) => {
-    console.log('Saved todo', doc);
-}, (e) => {
-    console.log('Could not save model:', e);
-});
-
-anotherTodo.save().then((doc) => {
-    console.log('Saved todo', doc);
-}, (e) => {
-    console.log('Could not save model:', e);
+app.listen(3000, () => {
+    console.log('Listening on port 3000');
 });
