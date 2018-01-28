@@ -64,7 +64,7 @@ app.delete('/todos/:id', (req,res) => {
             return res.status(404).send('Could not find document');
         }
 
-        return res.status(200).send({todo});
+        return res.send({todo});
     }).catch((e) => {
         return res.status(500).send('There was an error deleting this record,', e);
     });
