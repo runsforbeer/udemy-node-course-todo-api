@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -68,6 +69,35 @@ app.delete('/todos/:id', (req,res) => {
     }).catch((e) => {
         return res.status(500).send('There was an error deleting this record,', e);
     });
+});
+
+app.patch('/todos/:id', (req,res) => {
+    var id = req.params.id;
+    var body = _.pick(req.body, ['text'], ['completed']);
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(400).send('Invalid ID format');
+    }
+
+    console.log('Updating note to ', JSON.stringify(body));
+    if(_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime(); // ms since midnight 1970
+    } else {
+        console.log("completed was false or not a boolean");
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+        if(!todo) {
+            console.log('Could not find note with ID',id);
+            return res.status(404).send();
+        }
+
+        res.send({todo});
+    }).catch((e) => {
+        res.status(400).send();
+    })
 });
 
 app.listen(port, () => {
