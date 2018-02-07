@@ -56,6 +56,26 @@ UserSchema.methods.generateAuthToken = function() { // not an arrow function, be
     });
 };
 
+// does not require an instance
+UserSchema.statics.findByToken = function(token) {
+    var User = this;
+    var decoded;
+
+    try {
+        // JWT verify throws exception if not valid
+        decoded = jwt.verify(token, 'abc123');
+    } catch(e) {
+        return Promise.reject();
+    }
+
+    // ??? not familiary with this array accessing in quotes below... must be a mongoose thing?
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
 var User = mongoose.model('User', UserSchema);
 
 module.exports = {User};
