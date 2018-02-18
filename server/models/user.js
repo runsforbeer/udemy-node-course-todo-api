@@ -32,7 +32,7 @@ var UserSchema = new mongoose.Schema({
             required: true
         }
     }]
-});
+}, { usePushEach: true }); // this opton is to maintain backward compatibility - get pushAll error otherwise
 
 // override toJSON so we only return properties we want to return (instead off all properties)
 UserSchema.methods.toJSON = function() {
@@ -74,6 +74,30 @@ UserSchema.statics.findByToken = function(token) {
         '_id': decoded._id,
         'tokens.token': token,
         'tokens.access': 'auth'
+    });
+};
+
+UserSchema.statics.findByCredentials = function(email, password) {
+    var User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user) {
+            console.log('Did not find user... rejcting.');
+            return Promise.reject();
+        }
+
+        // check password
+        return new Promise((resolve,reject) => {
+            bcrypt.compare(password,user.password, (err,res) => {
+                if(res) {
+                    console.log('Passwords match, returning user');
+                    resolve(user);
+                } else {
+                    console.log('Passwords do not match');
+                    reject();
+                }
+            });
+        })
     });
 };
 
