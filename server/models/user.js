@@ -57,6 +57,17 @@ UserSchema.methods.generateAuthToken = function() { // not an arrow function, be
     });
 };
 
+UserSchema.methods.removeToken = function(token) {
+    var user = this;
+
+    // mongodb operator to pull from array
+    return user.update({
+        $pull: {
+            tokens: {token}
+        }
+    });
+}
+
 // does not require an instance
 UserSchema.statics.findByToken = function(token) {
     var User = this;
