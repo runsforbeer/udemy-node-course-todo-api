@@ -46,7 +46,7 @@ UserSchema.methods.toJSON = function() {
 UserSchema.methods.generateAuthToken = function() { // not an arrow function, because we need 'this'
     var user = this;
     var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access: access}, 'abc123').toString();
+    var token = jwt.sign({_id: user._id.toHexString(), access: access}, process.env.JWT_SECRET).toString();
     console.log('Generated token:', token);
 
     // add our new jwt token to the tokens array
@@ -75,7 +75,7 @@ UserSchema.statics.findByToken = function(token) {
 
     try {
         // JWT verify throws exception if not valid
-        decoded = jwt.verify(token, 'abc123');
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch(e) {
         return Promise.reject();
     }
